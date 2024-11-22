@@ -1,0 +1,36 @@
+import requests
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+# Chave da API (substitua pela sua chave)
+API_KEY = 'sua_chave_api_aqui'
+BASE_URL = 'http://api.openweathermap.org/data/2.5/weather'
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+@app.route('/previsao', methods=['POST'])
+def previsao():
+    cidade = request.form['cidade']
+    url = f"{BASE_URL}?q={cidade}&appid={API_KEY}&units=metric&lang=pt_br"
+    
+    response = requests.get(url)
+    data = response.json()
+
+    if response.status_code == 200:
+        temperatura = data['main']['temp']
+        descricao = data['weather'][0]['description']
+        umidade = data['main']['humidity']
+        vento = data['wind']['speed']
+
+        return render_template('resultado.html', cidade=cidade, temperatura=temperatura, descricao=descricao, umidade=umidade, vento=vento)
+    else:
+        return render_template('erro.html', cidade=cidade)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
